@@ -1,0 +1,93 @@
+---
+import Base from "../../layouts/Base.astro";
+import NoteCard from "../../components/NoteCard.astro";
+import Tag from "../../components/Tag.astro";
+import SectionHead from "../../components/SectionHead.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const COLLECTIONS = ["concepts", "entities", "tools", "patterns", "sources", "synthesis", "sessions"] as const;
+
+  type Item = { title: string; summary: string; href: string; date: Date; tags: string[] };
+  const tagPages = new Map<string, { display: string; pages: Item[] }>();
+  const tagCounts = new Map<string, number>();
+
+  for (const col of COLLECTIONS) {
+    // @ts-ignore
+    const entries = await getCollection(col, (e) => !e.data.draft);
+    for (const e of entries) {
+      for (const t of e.data.tags) {
+        const slug = t.toLowerCase().replace(/\s+/g, "-");
+        if (!tagPages.has(slug)) tagPages.set(slug, { display: t, pages: [] });
+        tagPages.get(slug)!.pages.push({
+          title: e.data.title,
+          summary: e.data.summary,
+          href: `/${col}/${e.id}/`,
+          date: e.data.updated,
+          tags: e.data.tags,
+        });
+        tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+      }
+    }
+  }
+
+  const allTags = [...tagCounts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([name, count]) => ({ name, count }));
+
+  return [...tagPages.entries()].map(([slug, { display, pages }]) => ({
+    params: { tag: slug },
+    props: {
+      tag: slug,
+      display,
+      pages: pages.sort((a, b) => b.date.getTime() - a.date.getTime()),
+      allTags,
+    },
+  }));
+}
+
+const { tag, display, pages, allTags } = Astro.props as {
+  tag: string;
+  display: string;
+  pages: Array<{ title: string; summary: string; href: string; date: Date; tags: string[] }>;
+  allTags: Array<{ name: string; count: number }>;
+};
+---
+
+<Base title={`#${display}`} description={`Notes tagged ${display}.`} activeNav="tags">
+  <header class="stack" style="--_stack-gap: var(--space-xs);">
+    <div class="hero__kicker">// tag</div>
+    <h1 style="font-family:var(--font-mono);font-weight:500;letter-spacing:-0.02em;">
+      <span style="color:var(--color-muted);">#</span>{display}
+    </h1>
+    <p class="hero__sub">
+      {pages.length} note{pages.length === 1 ? "" : "s"} tagged <strong style="font-weight:500;">{display}</strong>.
+    </p>
+  </header>
+
+  {allTags.length > 1 && (
+    <section class="stack" style="--_stack-gap: var(--space-s);">
+      <SectionHead title="Related tags" count="explore" />
+      <div class="row" style="--_row-gap: 6px;">
+        {allTags.map((t) => (
+          <Tag name={t.name} count={t.count} variant={t.name === display ? "accent" : "default"} />
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="stack" style="--_stack-gap: var(--space-s);">
+    <SectionHead title="In this tag" count={`${pages.length} note${pages.length === 1 ? "" : "s"}`} />
+    <div>
+      {pages.map((p) => (
+        <NoteCard
+          href={p.href}
+          title={p.title}
+          excerpt={p.summary}
+          date={p.date}
+          tags={p.tags}
+        />
+      ))}
+    </div>
+  </section>
+</Base>

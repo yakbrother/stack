@@ -1,0 +1,62 @@
+---
+import Base from "../../layouts/Base.astro";
+import NoteCard from "../../components/NoteCard.astro";
+import SectionHead from "../../components/SectionHead.astro";
+import { getCollection } from "astro:content";
+
+const COLLECTIONS = [
+  { key: "concepts",  label: "Concepts" },
+  { key: "patterns",  label: "Patterns" },
+  { key: "tools",     label: "Tools" },
+  { key: "entities",  label: "Entities" },
+  { key: "sources",   label: "Sources" },
+  { key: "synthesis", label: "Synthesis" },
+  { key: "sessions",  label: "Sessions" },
+] as const;
+
+const sections = await Promise.all(
+  COLLECTIONS.map(async ({ key, label }) => {
+    // @ts-ignore
+    const entries = await getCollection(key, (e) => !e.data.draft);
+    entries.sort((a, b) => b.data.updated.getTime() - a.data.updated.getTime());
+    return { key, label, entries };
+  })
+);
+
+const totalPages = sections.reduce((n, s) => n + s.entries.length, 0);
+const populated = sections.filter((s) => s.entries.length > 0);
+---
+
+<Base title="Wiki Index" description={`${totalPages} pages across the wiki.`} activeNav="notes">
+  <header class="stack" style="--_stack-gap: var(--space-xs);">
+    <div class="hero__kicker">// index</div>
+    <h1>All notes</h1>
+    <p class="hero__sub">
+      {totalPages} page{totalPages === 1 ? "" : "s"} across {populated.length} section{populated.length === 1 ? "" : "s"}, grouped by collection type.
+    </p>
+  </header>
+
+  {sections.map(({ key, label, entries }) => (
+    <section class="stack" style="--_stack-gap: var(--space-xs);" id={`section-${key}`}>
+      <header class="section-head">
+        <h2><a href={`/${key}/`}>{label}</a></h2>
+        <span class="count">{entries.length === 0 ? "—" : String(entries.length).padStart(2, "0")}</span>
+      </header>
+      {entries.length === 0 ? (
+        <p style="color:var(--color-muted);font-style:italic;font-size:var(--font-size-sm);">None yet.</p>
+      ) : (
+        <div>
+          {entries.map((entry) => (
+            <NoteCard
+              href={`/${key}/${entry.id}/`}
+              title={entry.data.title}
+              excerpt={entry.data.summary}
+              date={entry.data.updated}
+              tags={entry.data.tags}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  ))}
+</Base>

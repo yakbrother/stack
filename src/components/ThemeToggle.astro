@@ -1,0 +1,60 @@
+---
+// Cycles system → light → dark. Three-state because the design wants to
+// surface the current preference (the icon ◑ ○ ◐ shows which mode you're in).
+// The blocking inline script in Base.astro applies the persisted choice
+// before paint. This component renders the button and wires the click.
+---
+
+<button id="theme-toggle" class="topbar__theme" type="button" aria-label="Theme: system. Click to cycle.">
+  <span class="topbar__theme-icon" aria-hidden="true">◑</span>
+  <span class="topbar__theme-label">system</span>
+</button>
+
+<script>
+  const STORAGE_KEY = "stack-theme";
+  type Theme = "system" | "light" | "dark";
+
+  function readChoice(): Theme {
+    const v = localStorage.getItem(STORAGE_KEY);
+    return v === "light" || v === "dark" || v === "system" ? v : "system";
+  }
+
+  function effective(theme: Theme): "light" | "dark" {
+    if (theme === "system") {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    return theme;
+  }
+
+  function apply(theme: Theme) {
+    if (theme === "system") {
+      document.documentElement.removeAttribute("data-theme");
+    } else {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+    const btn = document.getElementById("theme-toggle");
+    if (!btn) return;
+    const eff = effective(theme);
+    const icon = theme === "system" ? "◑" : eff === "dark" ? "◐" : "○";
+    const iconEl = btn.querySelector(".topbar__theme-icon");
+    const labelEl = btn.querySelector(".topbar__theme-label");
+    if (iconEl) iconEl.textContent = icon;
+    if (labelEl) labelEl.textContent = theme;
+    btn.setAttribute("aria-label", `Theme: ${theme}. Click to cycle.`);
+  }
+
+  apply(readChoice());
+
+  const btn = document.getElementById("theme-toggle");
+  btn?.addEventListener("click", () => {
+    const order: Theme[] = ["system", "light", "dark"];
+    const next = order[(order.indexOf(readChoice()) + 1) % order.length];
+    localStorage.setItem(STORAGE_KEY, next);
+    apply(next);
+  });
+
+  // Follow OS changes when the user is on "system".
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    if (readChoice() === "system") apply("system");
+  });
+</script>

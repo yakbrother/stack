@@ -1,0 +1,23 @@
+---
+interface Props {
+  /** "note" | "warn" — controls background and icon color. */
+  variant?: "note" | "warn";
+  /** Short uppercase label (default "Note" or "Warning"). */
+  title?: string;
+  /** Single character or short string for the icon badge (e.g., "i", "!", "★"). */
+  icon?: string;
+}
+
+const { variant = "note", title, icon } = Astro.props;
+const cls = `callout${variant === "warn" ? " callout--warn" : ""}`;
+const resolvedTitle = title ?? (variant === "warn" ? "Warning" : "Note");
+const resolvedIcon = icon ?? (variant === "warn" ? "!" : "i");
+---
+
+<div class={cls}>
+  <div class="callout__icon" aria-hidden="true">{resolvedIcon}</div>
+  <div class="callout__body">
+    <div class="callout__title">{resolvedTitle}</div>
+    <div><slot /></div>
+  </div>
+</div>

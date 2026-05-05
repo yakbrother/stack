@@ -1,0 +1,32 @@
+---
+// Dynamic route for all wiki pages across all collections
+// Path: /[collection]/[id]/
+import { getCollection, render } from "astro:content";
+import WikiPage from "../../layouts/WikiPage.astro";
+
+export async function getStaticPaths() {
+  const collections = [
+    "concepts", "entities", "tools", "patterns",
+    "sources", "synthesis", "sessions"
+  ] as const;
+
+  const paths = [];
+  for (const col of collections) {
+    const entries = await getCollection(col, e => !e.data.draft);
+    for (const entry of entries) {
+      paths.push({
+        params: { collection: col, id: entry.id },
+        props: { entry, collection: col },
+      });
+    }
+  }
+  return paths;
+}
+
+const { entry, collection } = Astro.props;
+const { Content, headings } = await render(entry);
+---
+
+<WikiPage entry={entry} collection={collection} headings={headings}>
+  <Content />
+</WikiPage>

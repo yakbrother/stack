@@ -1,0 +1,88 @@
+---
+import Base from "../layouts/Base.astro";
+import Callout from "../components/Callout.astro";
+---
+
+<Base title="Colophon" description="Fonts, tools, and stack behind stack.yakbrother.dev." variant="narrow">
+  <article class="prose stack" style="--_stack-gap: var(--space-m);">
+    <div class="hero__kicker">// colophon</div>
+    <h1>Colophon</h1>
+    <p class="note-lede">
+      A working knowledge base built with Astro on top of an Obsidian-style folder of Markdown. No tracking, no analytics, no newsletter pop-up. The whole thing is one Markdown folder away from being plain text again.
+    </p>
+
+    <h2>Type</h2>
+    <ul>
+      <li><strong><a href="https://www.ibm.com/plex/" rel="noopener">IBM Plex Sans</a></strong> — body, UI chrome, headings. Weights 400, 500, 600, 700.</li>
+      <li><strong><a href="https://www.jetbrains.com/lp/mono/" rel="noopener">JetBrains Mono</a></strong> — metadata, breadcrumbs, button labels, code blocks, file paths. Weights 400, 500, 600.</li>
+      <li><strong><a href="https://fonts.google.com/specimen/Newsreader" rel="noopener">Newsreader</a></strong> — italic display face for note titles and the 404 hero. Weights 400, 500 (italic).</li>
+    </ul>
+    <p>
+      All three are loaded from <a href="https://fonts.google.com" rel="noopener">Google Fonts</a> with <code>display=swap</code>.
+    </p>
+
+    <h2>Color</h2>
+    <p>
+      A coral / olive palette in <a href="/concepts/oklch-color/">OKLCH</a>, derived from the
+      <a href="/sources/2026-04-yakbrother-fluid-design-system-v3-2/">yakbrother Fluid Design System v3.2</a>.
+      Source hex: <code>#D96868</code> (coral), <code>#FBF6F6</code> (paper), <code>#6A7E3F</code> (olive),
+      <code>#4C5C2D</code> (deep olive). Olive is the structural color — links, focus rails, primary buttons.
+      Coral is reserved for accents — wikilinks, focus ring, hover state. Dark mode flips to a warm ink (<code>oklch(16% 0.008 60)</code>), not pure black.
+    </p>
+    <p>
+      All derivable colors come from <code>color-mix(in oklch, …)</code> and relative color syntax
+      (<code>oklch(from var(--brand) calc(l - 0.08) c h)</code>) — see
+      <a href="/patterns/derived-color-tokens/">derived color tokens</a>.
+    </p>
+
+    <h2>Layout</h2>
+    <p>
+      Three-zone <a href="/patterns/fluid-grid/">fluid grid</a>: a 14rem left rail, a flexible main column,
+      and (on note pages) a 14rem right rail with a scrollspy TOC. No pixel breakpoints — Utopia fluid
+      <code>clamp()</code> scales for type and spacing, plus container queries on grid items so components
+      respond to their own width. See <a href="/concepts/fluid-design/">fluid design</a> for the philosophy.
+    </p>
+
+    <h2>Tools</h2>
+    <ul>
+      <li><strong><a href="https://astro.build" rel="noopener">Astro</a></strong> — static site generator. Zero client-side JavaScript except the theme toggle, the search modal, and the TOC scrollspy.</li>
+      <li><strong><a href="https://shiki.style" rel="noopener">Shiki</a></strong> — syntax highlighting at build time. Dual-theme: <code>github-light</code> + <code>github-dark</code>, switching with <code>[data-theme]</code>.</li>
+      <li><strong><a href="https://pagefind.app" rel="noopener">Pagefind</a></strong> — client-side search. Indexes the built HTML at deploy time; the ⌘K modal uses Pagefind's data API and renders results in our own markup.</li>
+      <li><strong><a href="https://www.netlify.com" rel="noopener">Netlify</a></strong> — hosting and deploy. Strict CSP, security headers in <code>netlify.toml</code>.</li>
+      <li><strong><a href="https://obsidian.md" rel="noopener">Obsidian</a></strong> — the local writing environment for the source Markdown.</li>
+      <li><strong><a href="https://claude.ai/code" rel="noopener">Claude Code</a></strong> — AI co-author for ingests, refactors, and the design implementation. Custom themes for Claude Code are <a href="/themes/">downloadable here</a>.</li>
+    </ul>
+
+    <h2>Method</h2>
+    <p>
+      Pages follow Andrej Karpathy's
+      <a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" rel="noopener">LLM Wiki pattern</a>:
+      a single source ingested into a source page plus the concepts, patterns, tools, or entities it surfaces.
+      Every derived page links back to its source. Cross-link aggressively across domains —
+      agent security, fluid design, and accessibility compliance are all the same conversation.
+    </p>
+
+    <h2>Conformance</h2>
+    <p>
+      Targets WCAG 2.2 AA, EN 301 549, and the
+      <a href="/entities/european-accessibility-act/">European Accessibility Act</a>.
+      Interactive targets ≥ 24×24 CSS px, <code>:focus-visible</code> coral outlines that survive sticky chrome,
+      <a href="/patterns/motion-opt-in/">motion opt-in</a> via <code>prefers-reduced-motion: no-preference</code>,
+      forced-colors-mode fallbacks, and a real <code>:user-valid</code> / <code>:user-invalid</code> form story.
+    </p>
+
+    <h2>Source</h2>
+    <p>
+      Site source is at
+      <a href="https://github.com/yakbrother" rel="noopener">github.com/yakbrother</a>.
+      Content licensed under <strong>CC BY 4.0</strong> unless individual pages note otherwise.
+      Code (Astro components, CSS, build pipeline) under <strong>MIT</strong>.
+    </p>
+
+    <Callout title="No analytics" icon="i">
+      No tracking pixels, no Google Analytics, no Plausible, no anything. Pagefind runs entirely in your
+      browser and never phones home. The only third-party request the site makes is to Google Fonts for
+      the three faces above, gated through CSP.
+    </Callout>
+  </article>
+</Base>

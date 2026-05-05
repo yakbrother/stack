@@ -1,0 +1,32 @@
+---
+import Base from "../layouts/Base.astro";
+import Callout from "../components/Callout.astro";
+import Wikilink from "../components/Wikilink.astro";
+---
+
+<Base title="404 — not found" description="That page isn't in this wiki." variant="narrow">
+  <div class="not-found">
+    <div class="not-found__inner">
+      <div class="not-found__code" aria-hidden="true">4<mark>0</mark>4</div>
+      <h1 style="font-family:var(--font-display);font-style:italic;font-weight:400;font-size:var(--font-size-3xl);letter-spacing:-0.02em;text-wrap:balance;">
+        That note isn't in this vault.
+      </h1>
+      <p style="color:var(--color-text-soft);max-width:42ch;text-wrap:pretty;">
+        It might have been renamed, archived, or never written. Some of my best ideas live in the second category.
+      </p>
+      <div class="row" style="justify-content:center;">
+        <a href="/" class="btn btn--primary">Go home</a>
+        <a href="/wiki-index/" class="btn">Browse the index</a>
+        <a href="/feed.xml" class="btn btn--ghost">RSS</a>
+      </div>
+      <Callout title="Were you looking for one of these?" icon="?">
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">
+          <Wikilink href="/concepts/fluid-design/">fluid-design</Wikilink>
+          <Wikilink href="/concepts/oklch-color/">oklch-color</Wikilink>
+          <Wikilink href="/concepts/cascade-layers/">cascade-layers</Wikilink>
+          <Wikilink href="/sources/2026-04-yakbrother-fluid-design-system-v3-2/">yakbrother fluid design system</Wikilink>
+        </div>
+      </Callout>
+    </div>
+  </div>
+</Base>

@@ -1,0 +1,12 @@
+---
+interface Props {
+  href: string;
+  /** When true, renders the .wikilink--unresolved variant (italic, muted). */
+  unresolved?: boolean;
+}
+
+const { href, unresolved = false } = Astro.props;
+const cls = `wikilink${unresolved ? " wikilink--unresolved" : ""}`;
+---
+
+<a class={cls} href={href}><slot /></a>

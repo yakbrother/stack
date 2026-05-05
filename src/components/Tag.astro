@@ -1,0 +1,31 @@
+---
+interface Props {
+  name: string;
+  /** "default" | "accent" — accent uses coral background */
+  variant?: "default" | "accent";
+  /** Optional count to render after the tag name. */
+  count?: number;
+  /** Override the default href. Defaults to /tags/<slug>/. */
+  href?: string;
+  /** Render as a non-link span (e.g., inline tag chips that aren't navigable). */
+  asLink?: boolean;
+}
+
+const { name, variant = "default", count, href, asLink = true } = Astro.props;
+
+const slug = name.toLowerCase().replace(/\s+/g, "-");
+const url = href ?? `/tags/${slug}/`;
+const cls = `tag${variant === "accent" ? " tag--accent" : ""}`;
+---
+
+{asLink ? (
+  <a class={cls} href={url}>
+    <span>{name}</span>
+    {count !== undefined && <span class="tag__count" style="opacity:0.55;margin-left:4px;font-variant-numeric:tabular-nums;">{count}</span>}
+  </a>
+) : (
+  <span class={cls}>
+    <span>{name}</span>
+    {count !== undefined && <span class="tag__count" style="opacity:0.55;margin-left:4px;font-variant-numeric:tabular-nums;">{count}</span>}
+  </span>
+)}

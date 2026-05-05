@@ -1,0 +1,40 @@
+---
+import Base from "../../layouts/Base.astro";
+import Tag from "../../components/Tag.astro";
+import SectionHead from "../../components/SectionHead.astro";
+import { getCollection } from "astro:content";
+
+const COLLECTIONS = ["concepts", "entities", "tools", "patterns", "sources", "synthesis", "sessions"] as const;
+
+const tagMap = new Map<string, number>();
+for (const col of COLLECTIONS) {
+  // @ts-ignore
+  const entries = await getCollection(col, (e) => !e.data.draft);
+  for (const e of entries) {
+    for (const t of e.data.tags) tagMap.set(t, (tagMap.get(t) ?? 0) + 1);
+  }
+}
+
+const tags = [...tagMap.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+---
+
+<Base title="Tags" description="All tags across the wiki." activeNav="tags">
+  <header class="stack" style="--_stack-gap: var(--space-xs);">
+    <div class="hero__kicker">// tags</div>
+    <h1>All tags</h1>
+    <p class="hero__sub">
+      {tags.length} tag{tags.length === 1 ? "" : "s"}, sorted by frequency.
+    </p>
+  </header>
+
+  {tags.length === 0 ? (
+    <p style="color:var(--color-muted);font-style:italic;margin-top:var(--space-l);">No tags yet.</p>
+  ) : (
+    <section class="stack" style="--_stack-gap: var(--space-s);">
+      <SectionHead title="Browse" count={tags.length} />
+      <div class="row" style="--_row-gap: 6px;">
+        {tags.map(([name, count]) => <Tag name={name} count={count} />)}
+      </div>
+    </section>
+  )}
+</Base>

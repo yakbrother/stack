@@ -1,0 +1,39 @@
+{
+  "name": "CRT Phosphor",
+  "base": "dark",
+  "overrides": {
+    "claude": "#e8b048",
+    "text": "#d4b86a",
+    "subtle": "#8a7c52",
+    "inactive": "#5a503a",
+    "background": "#0a0e0a",
+
+    "success": "#84e870",
+    "error": "#ff6e62",
+    "warning": "#ffc858",
+
+    "claudeShimmer": "#ffc858",
+    "warningShimmer": "#f0dca0",
+
+    "promptBorder": "#3a3e36",
+    "promptBorderShimmer": "#7cf06a",
+    "permission": "#7ce0d2",
+    "permissionShimmer": "#5fcfc0",
+    "planMode": "#e884d8",
+    "autoAccept": "#84e870",
+    "bashBorder": "#e8b048",
+    "ide": "#74c0f0",
+
+    "suggestion": "#5fcfc0",
+    "remember": "#ffc858",
+
+    "diffAdded": "#16241c",
+    "diffRemoved": "#241612",
+    "diffAddedDimmed": "#101a14",
+    "diffRemovedDimmed": "#1a100c",
+    "diffAddedWord": "#244830",
+    "diffRemovedWord": "#48201c",
+
+    "userMessageBackground": "#1a1e1a"
+  }
+}

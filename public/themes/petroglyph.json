@@ -1,0 +1,39 @@
+{
+  "name": "Petroglyph",
+  "base": "dark",
+  "overrides": {
+    "claude": "#bf6238",
+    "text": "#c8a878",
+    "subtle": "#8a7a66",
+    "inactive": "#5a4d3e",
+    "background": "#0d0a08",
+
+    "success": "#9eaa5a",
+    "error": "#bf6238",
+    "warning": "#d4a04a",
+
+    "claudeShimmer": "#d8784a",
+    "warningShimmer": "#e8cfa0",
+
+    "promptBorder": "#3a2e22",
+    "promptBorderShimmer": "#6ec0b8",
+    "permission": "#6ec0b8",
+    "permissionShimmer": "#7aaaa6",
+    "planMode": "#b07866",
+    "autoAccept": "#9eaa5a",
+    "bashBorder": "#b8893a",
+    "ide": "#6ec0b8",
+
+    "suggestion": "#7aaaa6",
+    "remember": "#d4a04a",
+
+    "diffAdded": "#1f2a14",
+    "diffRemoved": "#2a1410",
+    "diffAddedDimmed": "#161e0d",
+    "diffRemovedDimmed": "#1e0c0a",
+    "diffAddedWord": "#3a4a1f",
+    "diffRemovedWord": "#4a1e18",
+
+    "userMessageBackground": "#181410"
+  }
+}

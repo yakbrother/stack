@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.astro/
+
+# Private staging area — never committed, never published
+draft/
+
+# Obsidian workspace state
+.obsidian/workspace
+.obsidian/workspace.json
+.obsidian/workspaces.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Playwright MCP cache + verification screenshots
+.playwright-mcp/
+stack-*.png

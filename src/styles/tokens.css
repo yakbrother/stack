@@ -1,0 +1,227 @@
+/* ─────────────────────────────────────────────────────────────
+   tokens.css — Fluid Design System tokens
+   Implements yakbrother fluid-design v3.2:
+   - cascade layers
+   - Utopia fluid type + space
+   - OKLCH palette derived from #D96868 / #FBF6F6 / #6A7E3F / #4C5C2D
+   - light-dark() pairs, color-mix() derivations
+   ───────────────────────────────────────────────────────────── */
+
+@layer reset, theme, layout, components, utilities;
+
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; line-height: 1.5; }
+  img, svg, video { display: block; max-width: 100%; }
+  button { font: inherit; color: inherit; }
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--color-accent) 35%, transparent);
+    color: var(--color-text);
+  }
+  html {
+    scroll-padding-top: 5rem;
+    scroll-padding-bottom: 2rem;
+  }
+}
+
+@layer theme {
+  :root {
+    color-scheme: light dark;
+
+    /* ── Fluid Spacing (Utopia, 320 → 1440 viewport) ── */
+    --space-3xs: clamp(0.25rem, 0.23rem + 0.11vw, 0.31rem);
+    --space-2xs: clamp(0.5rem, 0.46rem + 0.22vw, 0.63rem);
+    --space-xs:  clamp(0.75rem, 0.68rem + 0.33vw, 0.94rem);
+    --space-s:   clamp(1rem, 0.91rem + 0.43vw, 1.25rem);
+    --space-m:   clamp(1.5rem, 1.37rem + 0.65vw, 1.88rem);
+    --space-l:   clamp(2rem, 1.83rem + 0.87vw, 2.5rem);
+    --space-xl:  clamp(3rem, 2.74rem + 1.3vw, 3.75rem);
+    --space-2xl: clamp(4rem, 3.65rem + 1.74vw, 5rem);
+    --space-3xl: clamp(6rem, 5.48rem + 2.61vw, 7.5rem);
+
+    --space-default: var(--space-m);
+    --space-section: var(--space-xl);
+
+    /* ── Fluid Type ── */
+    --font-size-xs:   clamp(0.75rem, 0.7rem + 0.26vw, 0.94rem);
+    --font-size-sm:   clamp(0.81rem, 0.77rem + 0.22vw, 0.97rem);
+    --font-size-base: clamp(0.95rem, 0.9rem + 0.25vw, 1.13rem);
+    --font-size-md:   clamp(1.06rem, 0.99rem + 0.33vw, 1.31rem);
+    --font-size-lg:   clamp(1.19rem, 1.09rem + 0.47vw, 1.53rem);
+    --font-size-xl:   clamp(1.34rem, 1.21rem + 0.65vw, 1.81rem);
+    --font-size-2xl:  clamp(1.51rem, 1.34rem + 0.87vw, 2.13rem);
+    --font-size-3xl:  clamp(1.7rem, 1.47rem + 1.15vw, 2.5rem);
+    --font-size-4xl:  clamp(1.91rem, 1.62rem + 1.52vw, 2.95rem);
+    --font-size-5xl:  clamp(2.15rem, 1.78rem + 1.96vw, 3.47rem);
+
+    /* ── Type stacks ── */
+    --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    --font-display: "Newsreader", "Source Serif Pro", Georgia, serif;
+
+    /* ── Layout config ── */
+    --layout-fluid-min: 32ch;
+    --layout-content-max: 68ch;
+    --layout-rail-w: 14rem;
+    --layout-default-gap: var(--space-m);
+
+    /* ── Brand palette (sRGB → OKLCH) ──
+       Source hex from colorhunt:
+         coral  #D96868  ≈ oklch(63% 0.14 25)
+         paper  #FBF6F6  ≈ oklch(97% 0.005 20)
+         olive  #6A7E3F  ≈ oklch(54% 0.09 124)
+         deep   #4C5C2D  ≈ oklch(40% 0.08 124) */
+
+    --coral: oklch(63% 0.14 25);
+    --paper: oklch(97% 0.005 25);
+    --olive: oklch(54% 0.09 124);
+    --olive-deep: oklch(40% 0.08 124);
+
+    /* Default accent rotation (Tweaks can swap) */
+    --color-accent: var(--coral);
+    --color-accent-hover:  oklch(from var(--color-accent) calc(l - 0.06) c h);
+    --color-accent-active: oklch(from var(--color-accent) calc(l - 0.12) c h);
+    --color-accent-soft:   color-mix(in oklch, var(--color-accent) 14%, var(--color-surface));
+
+    /* Primary = olive (structural), accent = coral (highlights) */
+    --color-primary:        light-dark(var(--olive-deep), oklch(72% 0.09 124));
+    --color-primary-hover:  light-dark(oklch(from var(--olive-deep) calc(l - 0.05) c h),
+                                       oklch(80% 0.09 124));
+
+    /* Surfaces & text via light-dark(); dark side built around a warm ink */
+    --color-surface:    light-dark(var(--paper), oklch(16% 0.008 60));
+    --color-surface-2:  light-dark(oklch(95% 0.006 25), oklch(20% 0.01 60));
+    --color-surface-3:  light-dark(oklch(92% 0.008 25), oklch(24% 0.012 60));
+    --color-text:       light-dark(oklch(22% 0.015 60), oklch(94% 0.008 60));
+    --color-text-soft:  color-mix(in oklch, var(--color-text) 78%, transparent);
+    --color-muted:      color-mix(in oklch, var(--color-text) 55%, transparent);
+    --color-faint:      color-mix(in oklch, var(--color-text) 30%, transparent);
+    --color-border:     color-mix(in oklch, var(--color-text) 14%, transparent);
+    --color-border-strong: color-mix(in oklch, var(--color-text) 28%, transparent);
+
+    --color-link:        var(--color-primary);
+    --color-link-hover:  var(--color-accent);
+    --color-focus:       var(--color-accent);
+
+    /* Semantic surfaces */
+    --color-tag-bg:      color-mix(in oklch, var(--olive) 14%, var(--color-surface));
+    --color-tag-fg:      light-dark(var(--olive-deep), oklch(82% 0.09 124));
+    --color-callout-note: color-mix(in oklch, var(--olive) 12%, var(--color-surface));
+    --color-callout-warn: color-mix(in oklch, var(--coral) 14%, var(--color-surface));
+
+    /* Radius / shadow */
+    --radius-xs: 3px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --shadow-1: 0 1px 0 color-mix(in oklch, var(--color-text) 8%, transparent);
+    --shadow-2: 0 1px 2px color-mix(in oklch, var(--color-text) 8%, transparent),
+                0 6px 24px color-mix(in oklch, var(--color-text) 6%, transparent);
+  }
+
+  [data-theme="light"] { color-scheme: light; }
+  [data-theme="dark"]  { color-scheme: dark; }
+}
+
+@layer layout {
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--_stack-gap, var(--space-default));
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--_row-gap, var(--space-xs));
+  }
+  .fluid-grid {
+    display: grid;
+    gap: var(--layout-default-gap);
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(var(--_fluid-min, var(--layout-fluid-min)), 100%), 1fr)
+    );
+  }
+  .repeating-grid {
+    display: grid;
+    gap: var(--layout-default-gap);
+    grid-template-columns: repeat(var(--_grid-repeat, 2), 1fr);
+  }
+  .prose {
+    max-width: var(--layout-content-max);
+    margin-inline: auto;
+  }
+}
+
+@layer components {
+  body {
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-base);
+    line-height: 1.55;
+    font-feature-settings: "ss01", "cv02", "cv11";
+    text-wrap: pretty;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    text-wrap: balance;
+    margin: 0;
+  }
+  h1 { font-size: var(--font-size-4xl); letter-spacing: -0.025em; }
+  h2 { font-size: var(--font-size-2xl); }
+  h3 { font-size: var(--font-size-xl); }
+  h4 { font-size: var(--font-size-lg); }
+
+  p { margin: 0; }
+
+  a {
+    color: var(--color-link);
+    text-decoration-color: color-mix(in oklch, var(--color-link) 35%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    transition: color .12s ease, text-decoration-color .12s ease;
+  }
+  a:hover { color: var(--color-link-hover); text-decoration-color: currentColor; }
+
+  code, kbd, samp, pre, .mono {
+    font-family: var(--font-mono);
+    font-feature-settings: "calt" 0;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--color-border);
+    margin: var(--space-l) 0;
+  }
+
+  /* Targets ≥24×24 (WCAG 2.2 SC 2.5.8) */
+  button, [role="button"], a.btn, input[type="checkbox"], input[type="radio"] {
+    min-height: 24px;
+    min-width: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .card, .note-card, .tag, .btn { border: 1px solid CanvasText; }
+}

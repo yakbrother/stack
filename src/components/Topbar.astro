@@ -1,0 +1,35 @@
+---
+import ThemeToggle from "./ThemeToggle.astro";
+import Search from "./Search.astro";
+
+interface Props {
+  /** Active nav item key — "home" | "notes" | "tags" | "graph" | "about" */
+  active?: string;
+}
+
+const { active } = Astro.props;
+
+const items = [
+  { id: "home",  label: "~/",     href: "/" },
+  { id: "notes", label: "notes",  href: "/wiki-index/" },
+  { id: "tags",  label: "tags",   href: "/tags/" },
+  { id: "about", label: "about",  href: "/about/" },
+];
+---
+
+<header class="topbar" role="banner">
+  <a href="/" class="topbar__brand" aria-label="stack.yakbrother.dev — home">
+    <span class="topbar__mark" aria-hidden="true">y</span>
+    <span>yakbrother / stack</span>
+  </a>
+  <nav class="topbar__nav" aria-label="Primary">
+    {items.map(i => (
+      <a href={i.href} aria-current={i.id === active ? "page" : undefined}>
+        {i.label}
+      </a>
+    ))}
+  </nav>
+  <div class="topbar__spacer"></div>
+  <Search />
+  <ThemeToggle />
+</header>

@@ -1,0 +1,154 @@
+---
+import Base from "../../layouts/Base.astro";
+import SectionHead from "../../components/SectionHead.astro";
+import Callout from "../../components/Callout.astro";
+import crtPhosphor from "../../../public/themes/crt-phosphor.json";
+import petroglyph from "../../../public/themes/petroglyph.json";
+import pixelManual from "../../../public/themes/pixel-manual.json";
+
+interface ThemeData {
+  name: string;
+  base: "light" | "dark";
+  overrides: Record<string, string>;
+}
+
+const themes: Array<{ slug: string; data: ThemeData; tagline: string }> = [
+  {
+    slug: "crt-phosphor",
+    data: crtPhosphor as ThemeData,
+    tagline: "Amber-and-green phosphor terminal. Warm yellow text on near-black, with a green prompt-border shimmer that mimics a degaussing CRT.",
+  },
+  {
+    slug: "petroglyph",
+    data: petroglyph as ThemeData,
+    tagline: "Earthy ochre and rust on warm ink. Inspired by cave-painting palettes — muted teal accents for permission and IDE callouts.",
+  },
+  {
+    slug: "pixel-manual",
+    data: pixelManual as ThemeData,
+    tagline: "Light theme with a vintage-software-manual feel. Burgundy claude colour, cream paper background, navy and forest accents.",
+  },
+];
+
+// Subset of the override keys we surface in the swatch row.
+const SWATCH_KEYS = [
+  { key: "background", label: "bg" },
+  { key: "text", label: "text" },
+  { key: "claude", label: "claude" },
+  { key: "success", label: "ok" },
+  { key: "warning", label: "warn" },
+  { key: "error", label: "err" },
+  { key: "permission", label: "perm" },
+  { key: "planMode", label: "plan" },
+] as const;
+---
+
+<Base title="Claude Code themes" description="Custom Claude Code themes for download." activeNav="home">
+  <header class="stack" style="--_stack-gap: var(--space-xs);">
+    <div class="hero__kicker">// themes</div>
+    <h1>Claude Code themes</h1>
+    <p class="hero__sub">
+      Three custom themes for <a href="https://claude.ai/code" rel="noopener">Claude Code</a> — drop in JSON,
+      restart, and pick the one that matches your terminal mood. Two dark, one light.
+    </p>
+  </header>
+
+  <section class="stack" style="--_stack-gap: var(--space-l);">
+    <SectionHead title="Available themes" count={themes.length} />
+
+    {themes.map((t) => (
+      <article class="theme-card stack" style={`--_stack-gap: var(--space-s); background: ${t.data.overrides.background}; color: ${t.data.overrides.text}; border-color: ${t.data.overrides.promptBorder ?? "var(--color-border)"};`}>
+        <header class="row" style="--_row-gap: var(--space-s); align-items: baseline;">
+          <h2 style={`font-family: var(--font-mono); font-weight: 600; color: ${t.data.overrides.claude}; margin:0;`}>
+            {t.data.name}
+          </h2>
+          <span class="mono" style={`font-size: var(--font-size-xs); color: ${t.data.overrides.subtle};`}>
+            base: {t.data.base}
+          </span>
+          <span style="flex:1;"></span>
+          <a
+            class="btn btn--accent"
+            href={`/themes/${t.slug}.json`}
+            download
+            style={`background: ${t.data.overrides.claude}; border-color: ${t.data.overrides.claude}; color: ${t.data.overrides.background};`}
+          >
+            Download {t.slug}.json
+          </a>
+        </header>
+
+        <p style={`color: ${t.data.overrides.subtle};`}>{t.tagline}</p>
+
+        <ul class="theme-card__swatches" aria-label={`Palette for ${t.data.name}`}>
+          {SWATCH_KEYS.map((s) => {
+            const value = t.data.overrides[s.key];
+            return value ? (
+              <li title={`${s.key}: ${value}`}>
+                <span class="theme-card__swatch" style={`background: ${value};`}></span>
+                <span class="theme-card__swatch-label" style={`color: ${t.data.overrides.subtle};`}>{s.label}</span>
+                <span class="theme-card__swatch-hex mono" style={`color: ${t.data.overrides.text};`}>{value}</span>
+              </li>
+            ) : null;
+          })}
+        </ul>
+      </article>
+    ))}
+  </section>
+
+  <section class="stack" style="--_stack-gap: var(--space-s);">
+    <SectionHead title="Install" />
+    <Callout title="Drop into Claude Code" icon="↓">
+      <ol style="margin-left:1.2em;line-height:1.55;">
+        <li>Download a theme JSON above (or all three).</li>
+        <li>Save to <code>~/.claude/themes/&lt;name&gt;.json</code>. Create the directory if it doesn't exist.</li>
+        <li>Restart Claude Code.</li>
+        <li>Run <code>/theme</code> in any session and pick your new theme from the list.</li>
+      </ol>
+      <p style="margin-top:var(--space-xs);">
+        The JSON schema is straightforward: a <code>name</code>, a <code>base</code> (<code>light</code> or <code>dark</code>) for the inherited defaults, and an <code>overrides</code> map of UI tokens (claude accent, text, background, diff highlights, prompt-border colours, plan-mode indicator, etc.). Open one of the files to use as a starting point for your own.
+      </p>
+    </Callout>
+  </section>
+
+  <p class="mono" style="font-size:var(--font-size-xs);color:var(--color-muted);">
+    Themes are CC0 — use, modify, redistribute freely.
+  </p>
+</Base>
+
+<style>
+  .theme-card {
+    border: 1px solid;
+    border-radius: var(--radius-md);
+    padding: var(--space-m);
+  }
+  .theme-card__swatches {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+    gap: var(--space-2xs);
+  }
+  .theme-card__swatches li {
+    display: grid;
+    grid-template-columns: 18px 4rem 1fr;
+    gap: var(--space-2xs);
+    align-items: center;
+    font-size: var(--font-size-xs);
+  }
+  .theme-card__swatch {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1px solid color-mix(in oklch, currentColor 30%, transparent);
+    display: inline-block;
+  }
+  .theme-card__swatch-label {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .theme-card__swatch-hex {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+</style>

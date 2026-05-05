@@ -1,0 +1,39 @@
+{
+  "name": "Pixel Manual",
+  "base": "light",
+  "overrides": {
+    "claude": "#9a2418",
+    "text": "#241810",
+    "subtle": "#5a4a36",
+    "inactive": "#9a8a72",
+    "background": "#f0e6d2",
+
+    "success": "#2c5e22",
+    "error": "#9a2418",
+    "warning": "#7a4a08",
+
+    "claudeShimmer": "#b8281c",
+    "warningShimmer": "#925810",
+
+    "promptBorder": "#d8c8a4",
+    "promptBorderShimmer": "#9a2418",
+    "permission": "#143e7a",
+    "permissionShimmer": "#1f4e98",
+    "planMode": "#6a2470",
+    "autoAccept": "#2c5e22",
+    "bashBorder": "#7a4a08",
+    "ide": "#1a5a6a",
+
+    "suggestion": "#236d80",
+    "remember": "#7a4a08",
+
+    "diffAdded": "#dee8c2",
+    "diffRemoved": "#ecd2c0",
+    "diffAddedDimmed": "#e6e0c8",
+    "diffRemovedDimmed": "#ecdcc8",
+    "diffAddedWord": "#c2d8a0",
+    "diffRemovedWord": "#e8b8a0",
+
+    "userMessageBackground": "#e6dac2"
+  }
+}

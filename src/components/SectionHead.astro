@@ -1,0 +1,16 @@
+---
+interface Props {
+  title: string;
+  count?: string | number;
+  level?: 2 | 3;
+  id?: string;
+}
+
+const { title, count, level = 2, id } = Astro.props;
+const Tag = `h${level}` as "h2" | "h3";
+---
+
+<header class="section-head">
+  <Tag id={id}>{title}</Tag>
+  {count !== undefined && <span class="count">{count}</span>}
+</header>

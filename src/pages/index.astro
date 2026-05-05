@@ -1,0 +1,65 @@
+---
+import Base from "../layouts/Base.astro";
+import NoteCard from "../components/NoteCard.astro";
+import SectionHead from "../components/SectionHead.astro";
+import { getCollection } from "astro:content";
+
+const COLLECTIONS = ["concepts", "entities", "tools", "patterns", "sources", "synthesis", "sessions"] as const;
+
+const all = (
+  await Promise.all(
+    COLLECTIONS.map(async (k) => {
+      // @ts-ignore
+      const entries = await getCollection(k, (e) => !e.data.draft);
+      return entries.map((e) => ({ entry: e, collection: k }));
+    })
+  )
+).flat();
+
+const totalCount = all.length;
+const latest = all
+  .sort((a, b) => b.entry.data.updated.getTime() - a.entry.data.updated.getTime())
+  .slice(0, 8);
+
+const lastUpdated = latest[0]?.entry.data.updated;
+const isoLastUpdated = lastUpdated ? lastUpdated.toISOString().slice(0, 10) : null;
+---
+
+<Base activeNav="home">
+  <section class="hero">
+    <div class="hero__kicker">// stack — design · security · agents</div>
+    <h1 class="hero__title">
+      Field notes on <em>code</em>, design,<br />and using AI without losing the plot.
+    </h1>
+    <p class="hero__sub">
+      A working garden of essays, patterns, and source summaries from my notebook, published continuously through Astro
+      using the <a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" rel="noopener">LLM Wiki pattern</a>
+      by Andrej Karpathy. Read in any order — most things link to most things.
+    </p>
+    <div class="hero__row">
+      <a href="/wiki-index/" class="btn btn--primary">Browse notes →</a>
+      <a href="/feed.xml" class="btn">Subscribe (RSS)</a>
+      <span style="flex:1;"></span>
+      {isoLastUpdated && (
+        <span class="mono" style="font-size:var(--font-size-xs);color:var(--color-muted);">
+          {totalCount} note{totalCount === 1 ? "" : "s"} · last updated {isoLastUpdated}
+        </span>
+      )}
+    </div>
+  </section>
+
+  <section class="stack" style="--_stack-gap: var(--space-s);">
+    <SectionHead title="Latest" count={`${latest.length} of ${totalCount}`} id="latest" />
+    <div>
+      {latest.map((r) => (
+        <NoteCard
+          href={`/${r.collection}/${r.entry.id}/`}
+          title={r.entry.data.title}
+          excerpt={r.entry.data.summary}
+          date={r.entry.data.updated}
+          tags={r.entry.data.tags}
+        />
+      ))}
+    </div>
+  </section>
+</Base>

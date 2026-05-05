@@ -1,0 +1,84 @@
+---
+import Base from "../layouts/Base.astro";
+import Callout from "../components/Callout.astro";
+import { getCollection } from "astro:content";
+
+const COLLECTIONS = ["concepts", "entities", "tools", "patterns", "sources", "synthesis", "sessions"] as const;
+
+const all = (
+  await Promise.all(
+    COLLECTIONS.map(async (k) => {
+      // @ts-ignore
+      const entries = await getCollection(k, (e) => !e.data.draft);
+      return entries;
+    })
+  )
+).flat();
+
+const tagSet = new Set<string>();
+all.forEach((e) => e.data.tags.forEach((t) => tagSet.add(t)));
+
+const stats = [
+  { num: String(all.length), label: "Pages published" },
+  { num: String(tagSet.size), label: "Distinct tags" },
+  { num: String(COLLECTIONS.length), label: "Page types" },
+  { num: "AA", label: "WCAG 2.2 target" },
+];
+---
+
+<Base title="About" description="About me and stack.yakbrother.dev." activeNav="about" variant="narrow">
+  <article class="prose stack" style="--_stack-gap: var(--space-m);">
+    <div class="row">
+      <div class="avatar" aria-hidden="true">avatar</div>
+      <div class="stack" style="--_stack-gap: 4px;">
+        <div class="hero__kicker">// about</div>
+        <h1>Tim Eaton</h1>
+        <p style="color:var(--color-text-soft);">
+          Designer and developer. I write Stack to think out loud about design systems, security, and using AI without losing the plot.
+        </p>
+      </div>
+    </div>
+
+    <p>
+      <strong>stack.yakbrother.dev</strong> is a working knowledge base on system design, security engineering, and AI agent architecture. The notes here are mostly working drafts — opinions I hold for now, ready to be wrong about later.
+    </p>
+
+    <p>
+      The site is an Astro build that reads a folder of Markdown. Pages are organized into seven collection types — concepts, patterns, tools, entities, sources, synthesis, sessions — each with its own conventions documented in <code>CLAUDE.md</code>. Wikilinks resolve at build time. The whole thing is one Markdown folder away from being plain text again.
+    </p>
+
+    <div class="stat-row">
+      {stats.map((s) => (
+        <div class="stat">
+          <span class="stat__num">{s.num}</span>
+          <span class="stat__label">{s.label}</span>
+        </div>
+      ))}
+    </div>
+
+    <h2>What you'll find here</h2>
+    <ul>
+      <li><strong>Design</strong> — fluid systems, OKLCH color, type, accessibility.</li>
+      <li><strong>Security</strong> — threat modeling, secrets management, OWASP (especially LLM Top 10), supply chain.</li>
+      <li><strong>AI agents</strong> — agent architectures, tool use, prompt engineering, memory, MCP, evaluation.</li>
+    </ul>
+
+    <h2>Method</h2>
+    <p>
+      Each note is ingested from a source (article, paper, primary doc) and broken into reusable pages — a source summary plus the concepts, patterns, tools, or entities it surfaces. The split follows
+      <a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" rel="noopener">Andrej Karpathy's LLM Wiki pattern</a>:
+      cite sources, cross-link aggressively, prefer first-principles explanations to jargon, take positions.
+    </p>
+
+    <h2>Elsewhere</h2>
+    <ul>
+      <li><a href="https://github.com/yakbrother" rel="me noopener">github / yakbrother</a></li>
+      <li><a href="/feed.xml">RSS feed</a></li>
+    </ul>
+
+    <Callout title="Colophon" icon="★">
+      Built with <strong>Astro</strong>, deployed on <strong>Netlify</strong>. Type: IBM Plex Sans, JetBrains Mono, and Newsreader italic. Color: a coral / olive palette in OKLCH, derived from the
+      <a href="/sources/2026-04-yakbrother-fluid-design-system-v3-2/">yakbrother Fluid Design System v3.2</a>. Search by Pagefind. No tracking, no analytics, no newsletter pop-up. Maintained with <a href="https://claude.ai/code" rel="noopener">Claude Code</a>.
+    </Callout>
+  </article>
+</Base>

@@ -1,0 +1,186 @@
+---
+// Search trigger button + Pagefind-backed modal.
+// Trigger uses .topbar__search class so it lives in the topbar visually.
+// Modal opens on click, ⌘K, Ctrl+K, or "/" (when no input is focused).
+// Pagefind generates /pagefind/pagefind-ui.js *after* astro build, so the
+// module is loaded at runtime via a `<script>` tag and a built URL.
+---
+
+<button
+  type="button"
+  id="search-trigger"
+  class="topbar__search"
+  aria-label="Search the wiki"
+  aria-haspopup="dialog"
+  aria-controls="search-overlay"
+>
+  <span aria-hidden="true">⌕</span>
+  <span>Search…</span>
+  <kbd>⌘K</kbd>
+</button>
+
+<div
+  id="search-overlay"
+  class="search-overlay"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Search"
+  hidden
+>
+  <div class="search-modal">
+    <label class="search-modal__input">
+      <span aria-hidden="true" style="color:var(--color-muted);">⌕</span>
+      <input id="search-input" type="search" autocomplete="off" placeholder="Search the wiki…" aria-label="Search the wiki" />
+      <span id="search-count" class="mono" style="color:var(--color-faint);font-size:11px;"></span>
+    </label>
+    <div id="search-results" class="search-modal__results" role="listbox" aria-label="Search results">
+      <p style="padding:var(--space-s) var(--space-m);color:var(--color-muted);font-size:var(--font-size-sm);">
+        Start typing to search.
+      </p>
+    </div>
+    <div class="search-modal__foot">
+      <span><kbd>↑↓</kbd>navigate</span>
+      <span><kbd>↵</kbd>open</span>
+      <span style="margin-left:auto;"><kbd>esc</kbd>close</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  type Pagefind = {
+    search: (q: string) => Promise<{ results: Array<{ data: () => Promise<{ url: string; meta?: Record<string, string>; excerpt: string }> }> }>;
+  };
+
+  const trigger = document.getElementById("search-trigger");
+  const overlay = document.getElementById("search-overlay");
+  const input = document.getElementById("search-input") as HTMLInputElement | null;
+  const resultsEl = document.getElementById("search-results");
+  const countEl = document.getElementById("search-count");
+
+  let pagefindPromise: Promise<Pagefind> | null = null;
+  let activeIndex = 0;
+  let resultLinks: HTMLAnchorElement[] = [];
+
+  async function loadPagefind(): Promise<Pagefind | null> {
+    if (!pagefindPromise) {
+      const url = new URL("/pagefind/pagefind.js", window.location.origin).href;
+      pagefindPromise = import(/* @vite-ignore */ url) as Promise<Pagefind>;
+    }
+    try { return await pagefindPromise; } catch { return null; }
+  }
+
+  function open() {
+    if (!overlay || !input) return;
+    overlay.hidden = false;
+    input.value = "";
+    if (resultsEl) {
+      resultsEl.innerHTML = `<p style="padding:var(--space-s) var(--space-m);color:var(--color-muted);font-size:var(--font-size-sm);">Start typing to search.</p>`;
+    }
+    if (countEl) countEl.textContent = "";
+    queueMicrotask(() => input.focus());
+    document.body.style.overflow = "hidden";
+  }
+
+  function close() {
+    if (!overlay) return;
+    overlay.hidden = true;
+    document.body.style.overflow = "";
+    trigger?.focus();
+  }
+
+  function setActive(i: number) {
+    if (resultLinks.length === 0) return;
+    activeIndex = (i + resultLinks.length) % resultLinks.length;
+    resultLinks.forEach((a, idx) => a.classList.toggle("is-active", idx === activeIndex));
+    resultLinks[activeIndex]?.scrollIntoView({ block: "nearest" });
+  }
+
+  async function runSearch(q: string) {
+    if (!resultsEl) return;
+    if (!q.trim()) {
+      resultsEl.innerHTML = `<p style="padding:var(--space-s) var(--space-m);color:var(--color-muted);font-size:var(--font-size-sm);">Start typing to search.</p>`;
+      if (countEl) countEl.textContent = "";
+      resultLinks = [];
+      return;
+    }
+    const pf = await loadPagefind();
+    if (!pf) {
+      resultsEl.innerHTML = `<p style="padding:var(--space-s) var(--space-m);color:var(--color-muted);font-size:var(--font-size-sm);">Search isn't available in dev. Run <code>npm run build</code> and reload.</p>`;
+      return;
+    }
+    const search = await pf.search(q);
+    const top = await Promise.all(search.results.slice(0, 12).map(r => r.data()));
+    if (countEl) countEl.textContent = `${top.length} result${top.length === 1 ? "" : "s"}`;
+    if (top.length === 0) {
+      resultsEl.innerHTML = `<p style="padding:var(--space-s) var(--space-m);color:var(--color-muted);font-size:var(--font-size-sm);">No results for "${q.replace(/[<>&"]/g, "")}".</p>`;
+      resultLinks = [];
+      return;
+    }
+    resultsEl.innerHTML = top.map(r => {
+      const path = new URL(r.url, window.location.origin).pathname;
+      const title = (r.meta?.title ?? path).replace(/[<>&"]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c]!));
+      const kind = path.startsWith("/concepts/") ? "C"
+        : path.startsWith("/patterns/") ? "P"
+        : path.startsWith("/tools/") ? "T"
+        : path.startsWith("/entities/") ? "E"
+        : path.startsWith("/sources/") ? "S"
+        : path.startsWith("/synthesis/") ? "Y"
+        : path.startsWith("/sessions/") ? "L"
+        : path.startsWith("/tags/") ? "#"
+        : "·";
+      return `<a class="search-result" href="${path}" role="option">
+        <span class="search-result__kind" aria-hidden="true">${kind}</span>
+        <span>
+          <div class="search-result__title">${title}</div>
+          <div class="search-result__path">${path}</div>
+        </span>
+        <span class="mono" style="color:var(--color-faint);font-size:11px;" aria-hidden="true">↵</span>
+      </a>`;
+    }).join("");
+    resultLinks = Array.from(resultsEl.querySelectorAll<HTMLAnchorElement>(".search-result"));
+    setActive(0);
+  }
+
+  let debounce: number | undefined;
+  input?.addEventListener("input", () => {
+    if (debounce) clearTimeout(debounce);
+    debounce = window.setTimeout(() => runSearch(input.value), 120);
+  });
+
+  trigger?.addEventListener("click", open);
+
+  document.addEventListener("keydown", (e) => {
+    const isOpen = overlay && !overlay.hidden;
+    const target = e.target as HTMLElement | null;
+    const inField = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+
+    if (!isOpen) {
+      if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        open();
+      } else if (e.key === "/" && !inField) {
+        e.preventDefault();
+        open();
+      }
+      return;
+    }
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      close();
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActive(activeIndex + 1);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActive(activeIndex - 1);
+    } else if (e.key === "Enter" && resultLinks[activeIndex]) {
+      e.preventDefault();
+      window.location.assign(resultLinks[activeIndex].href);
+    }
+  });
+
+  overlay?.addEventListener("click", (e) => {
+    if (e.target === overlay) close();
+  });
+</script>

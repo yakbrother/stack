@@ -1,0 +1,74 @@
+---
+import { getCollection } from "astro:content";
+
+interface Props {
+  /** Collection key currently active, used to highlight the section. */
+  active?: string;
+}
+
+const { active } = Astro.props;
+
+// The "Sections" group mirrors the wiki's 7 collection types from CLAUDE.md.
+// We compute live counts from published pages so the rail stays accurate.
+const SECTION_DEFS = [
+  { id: "concepts",  title: "Concepts" },
+  { id: "patterns",  title: "Patterns" },
+  { id: "tools",     title: "Tools" },
+  { id: "entities",  title: "Entities" },
+  { id: "sources",   title: "Sources" },
+  { id: "synthesis", title: "Synthesis" },
+  { id: "sessions",  title: "Sessions" },
+] as const;
+
+const sections = await Promise.all(
+  SECTION_DEFS.map(async s => {
+    // @ts-ignore — id is a known collection key
+    const entries = await getCollection(s.id, e => !e.data.draft);
+    return { ...s, count: entries.length };
+  })
+);
+
+// Recent: 4 most-recently-updated published pages across all collections.
+const ALL_KEYS = SECTION_DEFS.map(s => s.id);
+const flat = (
+  await Promise.all(
+    ALL_KEYS.map(async k => {
+      // @ts-ignore
+      const entries = await getCollection(k, e => !e.data.draft);
+      return entries.map(e => ({ entry: e, collection: k }));
+    })
+  )
+).flat();
+
+const recent = flat
+  .sort((a, b) => b.entry.data.updated.getTime() - a.entry.data.updated.getTime())
+  .slice(0, 4);
+---
+
+<aside class="rail" aria-label="Sections">
+  <div class="rail__group">
+    <div class="rail__title">Sections</div>
+    {sections.map(s => (
+      <a
+        href={`/${s.id}/`}
+        class="rail__item"
+        aria-current={s.id === active ? "true" : undefined}
+      >
+        <span class="dot" aria-hidden="true"></span>
+        <span>{s.title}</span>
+        <span class="rail__count">{s.count}</span>
+      </a>
+    ))}
+  </div>
+
+  {recent.length > 0 && (
+    <div class="rail__group">
+      <div class="rail__title">Recent</div>
+      {recent.map(r => (
+        <a href={`/${r.collection}/${r.entry.id}/`} class="rail__item">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{r.entry.data.title}</span>
+        </a>
+      ))}
+    </div>
+  )}
+</aside>

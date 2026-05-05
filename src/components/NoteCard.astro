@@ -1,0 +1,33 @@
+---
+import Tag from "./Tag.astro";
+
+interface Props {
+  href: string;
+  title: string;
+  excerpt?: string;
+  date: Date;
+  tags?: string[];
+  /** "monthDay" → "04/22"; "day" → "22"; default "monthDay". */
+  dateFormat?: "monthDay" | "day";
+}
+
+const { href, title, excerpt, date, tags = [], dateFormat = "monthDay" } = Astro.props;
+
+const iso = date.toISOString().slice(0, 10);
+const dateLabel = dateFormat === "day"
+  ? String(date.getUTCDate()).padStart(2, "0")
+  : `${String(date.getUTCMonth() + 1).padStart(2, "0")}/${String(date.getUTCDate()).padStart(2, "0")}`;
+---
+
+<a class="note-card" href={href}>
+  <time class="note-card__date" datetime={iso}>{dateLabel}</time>
+  <div class="note-card__body">
+    <div class="note-card__title">{title}</div>
+    {excerpt && <div class="note-card__excerpt">{excerpt}</div>}
+    {tags.length > 0 && (
+      <div class="note-card__tags">
+        {tags.map(t => <Tag name={t} asLink={false} />)}
+      </div>
+    )}
+  </div>
+</a>

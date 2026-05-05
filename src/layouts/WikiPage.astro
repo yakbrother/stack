@@ -1,0 +1,145 @@
+---
+import Base from "./Base.astro";
+import Tag from "../components/Tag.astro";
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import type { MarkdownHeading } from "astro";
+
+type AnyEntry =
+  | CollectionEntry<"concepts">
+  | CollectionEntry<"entities">
+  | CollectionEntry<"tools">
+  | CollectionEntry<"patterns">
+  | CollectionEntry<"sources">
+  | CollectionEntry<"synthesis">
+  | CollectionEntry<"sessions">;
+
+interface Props {
+  entry: AnyEntry;
+  collection: string;
+  /** Markdown headings extracted by Astro at render time, used for the right-rail TOC. */
+  headings?: MarkdownHeading[];
+}
+
+const { entry, collection, headings = [] } = Astro.props;
+const { title, summary, tags, related, updated, body } = entry.data as {
+  title: string;
+  summary: string;
+  tags: string[];
+  related: string[];
+  updated: Date;
+  body?: string;
+};
+
+// Word count + read time from raw body. body is provided by the glob loader.
+const rawBody = (entry as { body?: string }).body ?? "";
+const wordCount = rawBody ? rawBody.split(/\s+/).filter(Boolean).length : 0;
+const readMinutes = Math.max(1, Math.round(wordCount / 220));
+
+const updatedIso = updated.toISOString().slice(0, 10);
+const filePath = `${collection} / ${entry.id}.md`;
+
+// Resolve `related` page titles to URLs across all collections.
+const REL_COLS = ["concepts", "entities", "tools", "patterns", "sources", "synthesis", "sessions"] as const;
+const titleToUrl = new Map<string, string>();
+for (const col of REL_COLS) {
+  // @ts-ignore
+  const entries = await getCollection(col, (e) => !e.data.draft);
+  for (const e of entries) titleToUrl.set(e.data.title, `/${col}/${e.id}/`);
+}
+const resolvedRelated = related
+  .map((r: string) => ({ title: r, href: titleToUrl.get(r) }))
+  .filter((r): r is { title: string; href: string } => Boolean(r.href));
+
+// Build the TOC (depth 2 + 3 only — h1 is the page title rendered by the layout).
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+<Base title={title} description={summary} activeSection={collection} activeNav="notes">
+  <article class="prose stack" style="--_stack-gap: var(--space-s);">
+    <div class="note-meta">
+      <span class="mono">{filePath}</span>
+      <span class="sep" aria-hidden="true"></span>
+      <time datetime={updatedIso}>{updatedIso}</time>
+      <span class="sep" aria-hidden="true"></span>
+      <span>{readMinutes} min read</span>
+      <span class="sep" aria-hidden="true"></span>
+      <span>{wordCount.toLocaleString("en-US")} words</span>
+    </div>
+
+    <h1 class="note-title">{title}</h1>
+
+    {summary && <p class="note-lede">{summary}</p>}
+
+    {tags.length > 0 && (
+      <div class="row" style="--_row-gap: 6px;">
+        {tags.map((t) => <Tag name={t} />)}
+      </div>
+    )}
+
+    <slot />
+
+    {resolvedRelated.length > 0 && (
+      <aside aria-label="Related pages" style="margin-top: var(--space-l);">
+        <header class="section-head">
+          <h2>See also</h2>
+          <span class="count">{resolvedRelated.length}</span>
+        </header>
+        <ul class="stack" style="list-style:none;padding-left:0;--_stack-gap: var(--space-2xs);">
+          {resolvedRelated.map((r) => (
+            <li><a href={r.href}>{r.title}</a></li>
+          ))}
+        </ul>
+      </aside>
+    )}
+
+    <hr />
+    <div class="note-meta">
+      <span>Last edited <time datetime={updatedIso}>{updatedIso}</time></span>
+    </div>
+  </article>
+
+  <aside slot="right-rail" class="rail" aria-label="On this page">
+    {toc.length > 0 && (
+      <div class="rail__group">
+        <div class="rail__title">On this page</div>
+        <nav class="toc" id="page-toc">
+          {toc.map((h) => (
+            <a href={`#${h.slug}`} data-level={h.depth} data-toc-link>{h.text}</a>
+          ))}
+        </nav>
+      </div>
+    )}
+  </aside>
+
+  <script>
+    // Scrollspy: highlight the TOC entry whose heading is currently visible.
+    const links = document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]');
+    if (links.length > 0) {
+      const map = new Map<string, HTMLAnchorElement>();
+      links.forEach((a) => {
+        const id = a.getAttribute('href')?.slice(1);
+        if (id) map.set(id, a);
+      });
+      const headings = Array.from(map.keys())
+        .map((id) => document.getElementById(id))
+        .filter((el): el is HTMLElement => Boolean(el));
+
+      const activate = (id: string | null) => {
+        links.forEach((a) => a.classList.toggle('is-active', a.getAttribute('href') === `#${id}`));
+      };
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          // Pick the topmost intersecting heading.
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+          if (visible[0]) activate(visible[0].target.id);
+        },
+        { rootMargin: '-20% 0px -70% 0px', threshold: 0 }
+      );
+      headings.forEach((h) => observer.observe(h));
+    }
+  </script>
+</Base>
