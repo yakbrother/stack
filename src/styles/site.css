@@ -105,6 +105,34 @@
   }
   .topbar__theme:hover { color: var(--color-text); }
 
+  /* Topbar — mobile collapse. Below 60rem the search trigger compresses to
+     just an icon (no kbd hint, no min-width), nav links shrink, brand text
+     truncates. The whole row stays in one line — no wrap needed. */
+  @media (max-width: 60rem) {
+    .topbar {
+      gap: var(--space-s);
+      padding: var(--space-s);
+    }
+    .topbar__search {
+      min-width: 0;
+      padding: 6px 8px;
+    }
+    .topbar__search > span:nth-child(2) { display: none; }
+    .topbar__search kbd { display: none; }
+  }
+
+  @media (max-width: 30rem) {
+    /* Phone-tight: hide secondary nav + theme label, brand still visible. */
+    .topbar__nav { display: none; }
+    .topbar__theme-label { display: none; }
+    .topbar__brand > span:last-child {
+      max-width: 9rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
   /* ── Three-zone layout ── */
   .layout {
     display: grid;
@@ -122,8 +150,36 @@
   .layout--wide {
     grid-template-columns: var(--layout-rail-w) minmax(0, 1fr);
   }
-  @container (max-width: 60rem) {
-    .layout { grid-template-columns: 1fr; }
+  /* The handoff used a container query here, but nothing in the live DOM
+     declares `container-type: inline-size`, so it never fired. Use viewport
+     queries for the page-level layout collapse — container queries are still
+     used inside components (note cards, etc.) where they belong. */
+  @media (max-width: 60rem) {
+    .layout,
+    .layout--wide {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-m);
+      padding: var(--space-m) var(--space-s);
+    }
+    /* Drop sticky on mobile so the rail scrolls with the page; on a phone
+       there's no second column for it to anchor against. */
+    .rail {
+      position: static;
+      top: auto;
+    }
+  }
+
+  @media (max-width: 30rem) {
+    /* Tighter padding on phones; keep the date column readable but compact. */
+    .layout,
+    .layout--narrow,
+    .layout--wide {
+      padding: var(--space-s) var(--space-xs);
+    }
+    .note-card {
+      grid-template-columns: 64px 1fr;
+      gap: var(--space-xs);
+    }
   }
 
   .rail {
