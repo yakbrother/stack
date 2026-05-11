@@ -1,0 +1,284 @@
+---
+import Base from "../../layouts/Base.astro";
+import SectionHead from "../../components/SectionHead.astro";
+import Callout from "../../components/Callout.astro";
+import { getCollection } from "astro:content";
+import { promises as fs } from "node:fs";
+import path from "node:path";
+
+// Pull every /sources/* page that declares a sourceFile and surface its
+// download(s) plus a back-link to the wiki page describing it. Keeps the
+// downloads index in sync as new sources land — no manual list to maintain.
+type Item = {
+  title: string;
+  href: string;             // wiki page describing it
+  file: string;             // download URL
+  fileLabel: string;
+  size?: string;
+  summary: string;
+  kind: "ai-rule" | "skill" | "theme";
+};
+
+function classify(file: string): "ai-rule" | "skill" | "theme" {
+  if (file.startsWith("/downloads/ai-rules/")) return "ai-rule";
+  if (file.startsWith("/downloads/skills/")) return "skill";
+  return "theme";
+}
+
+function humanSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+}
+
+async function sizeOf(publicPath: string): Promise<string | undefined> {
+  try {
+    const abs = path.join(process.cwd(), "public", publicPath.replace(/^\//, ""));
+    const stat = await fs.stat(abs);
+    return humanSize(stat.size);
+  } catch {
+    return undefined;
+  }
+}
+
+const sources = await getCollection("sources", (e) => !e.data.draft);
+
+const items: Item[] = [];
+for (const s of sources) {
+  const data = s.data as {
+    title: string;
+    summary: string;
+    sourceFile?: string;
+    sourceFileLabel?: string;
+    sourceFileExtra?: string;
+    sourceFileExtraLabel?: string;
+  };
+  if (!data.sourceFile) continue;
+  const href = `/sources/${s.id}/`;
+  items.push({
+    title: data.title,
+    href,
+    file: data.sourceFile,
+    fileLabel: data.sourceFileLabel ?? data.sourceFile.split("/").pop()!,
+    size: await sizeOf(data.sourceFile),
+    summary: data.summary,
+    kind: classify(data.sourceFile),
+  });
+  if (data.sourceFileExtra) {
+    items.push({
+      title: data.title,
+      href,
+      file: data.sourceFileExtra,
+      fileLabel: data.sourceFileExtraLabel ?? data.sourceFileExtra.split("/").pop()!,
+      size: await sizeOf(data.sourceFileExtra),
+      summary: data.summary,
+      kind: classify(data.sourceFileExtra),
+    });
+  }
+}
+
+// Themes — three hand-curated entries. The /themes/ page has the rich
+// preview; here we just list them with file + back-link.
+const themes = [
+  {
+    title: "CRT Phosphor",
+    file: "/themes/crt-phosphor.json",
+    fileLabel: "crt-phosphor.json",
+    summary: "Amber-and-green phosphor terminal. Warm yellow text on near-black, with a green prompt-border shimmer that mimics a degaussing CRT.",
+  },
+  {
+    title: "Petroglyph",
+    file: "/themes/petroglyph.json",
+    fileLabel: "petroglyph.json",
+    summary: "Earthy ochre and rust on warm ink. Inspired by cave-painting palettes — muted teal accents for permission and IDE callouts.",
+  },
+  {
+    title: "Pixel Manual",
+    file: "/themes/pixel-manual.json",
+    fileLabel: "pixel-manual.json",
+    summary: "Light theme with a vintage-software-manual feel. Burgundy claude colour, cream paper background, navy and forest accents.",
+  },
+];
+
+for (const t of themes) {
+  items.push({
+    title: t.title,
+    href: "/themes/",
+    file: t.file,
+    fileLabel: t.fileLabel,
+    size: await sizeOf(t.file),
+    summary: t.summary,
+    kind: "theme",
+  });
+}
+
+// Group by kind for the page sections.
+const aiRules = items.filter((i) => i.kind === "ai-rule");
+const skills = items.filter((i) => i.kind === "skill");
+const themesGroup = items.filter((i) => i.kind === "theme");
+
+const KIND_BADGE: Record<Item["kind"], string> = {
+  "ai-rule": "MD",
+  "skill": "SKILL",
+  "theme": "JSON",
+};
+---
+
+<Base title="Downloads" description="Downloadable AI rules, Claude Code skills, and themes from stack.yakbrother.dev." activeNav="home">
+  <header class="stack" style="--_stack-gap: var(--space-xs);">
+    <div class="hero__kicker">// downloads</div>
+    <h1>Downloads</h1>
+    <p class="hero__sub">
+      Every AI rule file, Claude Code skill, and theme that's referenced from a page on this site, served as a direct download. Each entry links back to the wiki page that explains it.
+    </p>
+  </header>
+
+  <section class="stack" style="--_stack-gap: var(--space-s);">
+    <SectionHead title="AI coding rules" count={aiRules.length} />
+    <p class="hero__sub" style="font-size:var(--font-size-sm);">
+      Drop into a project's root as <code>AGENTS.md</code>, <code>CLAUDE.md</code>, or load as a Cursor rule file. Compose them as <a href="/sources/2025-general-coding-standards/">layered floors</a> — universal rules + agent contract + review checklist.
+    </p>
+    <ul class="download-list">
+      {aiRules.map((i) => (
+        <li class="download-row">
+          <span class="download-row__kind mono" aria-label={`Kind: ${KIND_BADGE[i.kind]}`}>{KIND_BADGE[i.kind]}</span>
+          <div class="download-row__body">
+            <div class="download-row__file mono"><strong>{i.fileLabel}</strong>{i.size && <span style="color:var(--color-muted);"> · {i.size}</span>}</div>
+            <div class="download-row__summary">{i.summary}</div>
+            <div class="download-row__meta mono" style="font-size:var(--font-size-xs);color:var(--color-muted);">
+              describes: <a href={i.href}>{i.title}</a>
+            </div>
+          </div>
+          <a class="btn btn--accent download-row__action" href={i.file} download aria-label={`Download ${i.fileLabel}`}>
+            <span aria-hidden="true">↓</span>
+            <span>Download</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="stack" style="--_stack-gap: var(--space-s);">
+    <SectionHead title="Skills" count={skills.length} />
+    <p class="hero__sub" style="font-size:var(--font-size-sm);">
+      Claude Code skill bundles and their underlying ruleset markdown. Install the <code>.skill</code> file into <code>~/.claude/skills/</code> to make the rules apply automatically when relevant.
+    </p>
+    <ul class="download-list">
+      {skills.map((i) => (
+        <li class="download-row">
+          <span class="download-row__kind mono">{KIND_BADGE[i.kind]}</span>
+          <div class="download-row__body">
+            <div class="download-row__file mono"><strong>{i.fileLabel}</strong>{i.size && <span style="color:var(--color-muted);"> · {i.size}</span>}</div>
+            <div class="download-row__summary">{i.summary}</div>
+            <div class="download-row__meta mono" style="font-size:var(--font-size-xs);color:var(--color-muted);">
+              describes: <a href={i.href}>{i.title}</a>
+            </div>
+          </div>
+          <a class="btn btn--accent download-row__action" href={i.file} download aria-label={`Download ${i.fileLabel}`}>
+            <span aria-hidden="true">↓</span>
+            <span>Download</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="stack" style="--_stack-gap: var(--space-s);">
+    <SectionHead title="Claude Code themes" count={themesGroup.length} />
+    <p class="hero__sub" style="font-size:var(--font-size-sm);">
+      For the full visual previews (colour swatches per theme) see the
+      <a href="/themes/">themes page</a>. Listed here for completeness.
+    </p>
+    <ul class="download-list">
+      {themesGroup.map((i) => (
+        <li class="download-row">
+          <span class="download-row__kind mono">{KIND_BADGE[i.kind]}</span>
+          <div class="download-row__body">
+            <div class="download-row__file mono"><strong>{i.fileLabel}</strong>{i.size && <span style="color:var(--color-muted);"> · {i.size}</span>}</div>
+            <div class="download-row__summary">{i.summary}</div>
+            <div class="download-row__meta mono" style="font-size:var(--font-size-xs);color:var(--color-muted);">
+              previews on: <a href={i.href}>{i.title === "CRT Phosphor" || i.title === "Petroglyph" || i.title === "Pixel Manual" ? "themes page" : i.title}</a>
+            </div>
+          </div>
+          <a class="btn btn--accent download-row__action" href={i.file} download aria-label={`Download ${i.fileLabel}`}>
+            <span aria-hidden="true">↓</span>
+            <span>Download</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <Callout title="License" icon="i">
+    Files here are mine to redistribute — CC BY 4.0 unless the file itself names a different licence in its header (the <a href="/sources/2025-general-coding-standards/">General Coding Rules</a> file credits PatrickJS/awesome-cursorrules as its origin). Use freely, attribute where indicated, share improvements.
+  </Callout>
+</Base>
+
+<style>
+  .download-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+  .download-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--space-s);
+    align-items: center;
+    padding: var(--space-s);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    transition: background 0.12s, border-color 0.12s;
+  }
+  .download-row:hover {
+    background: var(--color-surface-2);
+    border-color: var(--color-border-strong);
+  }
+  .download-row__kind {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: grid;
+    place-items: center;
+    background: var(--color-surface-2);
+    color: var(--color-muted);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .download-row__body {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .download-row__file {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+  }
+  .download-row__summary {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-soft);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 30rem) {
+    .download-row {
+      grid-template-columns: auto 1fr;
+      grid-template-areas:
+        "kind body"
+        "action action";
+    }
+    .download-row__kind { grid-area: kind; }
+    .download-row__body { grid-area: body; }
+    .download-row__action {
+      grid-area: action;
+      justify-self: stretch;
+      justify-content: center;
+    }
+  }
+</style>

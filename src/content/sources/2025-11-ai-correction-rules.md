@@ -12,6 +12,8 @@ created: 2026-05-05
 updated: 2026-05-05
 sourceAuthor: "Tim Eaton"
 sourceDate: 2025-11-01
+sourceFile: "/downloads/ai-rules/ai-correction-rules.md"
+sourceFileLabel: "ai-correction-rules.md"
 ---
 
 A meaty review checklist I keep around for catching common mistakes in AI-generated code. The doc's premise is that AI excels at the happy path and consistently overlooks failure modes, edge cases, and security boundaries. The intended workflow: open the AI-generated code in a fresh context window or hand it to a different agent, then walk this list top-to-bottom.

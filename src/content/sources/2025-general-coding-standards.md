@@ -11,6 +11,8 @@ created: 2026-05-05
 updated: 2026-05-05
 sourceAuthor: "Tim Eaton (adapted from PatrickJS/awesome-cursorrules)"
 sourceDate: 2025-10-01
+sourceFile: "/downloads/ai-rules/general-coding-standards.md"
+sourceFileLabel: "general-coding-standards.md"
 ---
 
 A short, language-agnostic ruleset adapted from [PatrickJS/awesome-cursorrules](https://github.com/PatrickJS/awesome-cursorrules). Sits next to the language-specific rules ([Modern PHP Coding Standards v1.0](/sources/2025-09-modern-php-coding-standards-v1/), etc.) as the universal floor — things that apply regardless of stack.

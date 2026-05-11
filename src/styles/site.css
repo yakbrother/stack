@@ -777,6 +777,21 @@
     color: var(--color-muted);
   }
 
+  /* Source-page download row — sits between the tag chips and the prose body
+     on /sources/* pages whose frontmatter declares `sourceFile`. */
+  .source-download {
+    padding: var(--space-xs) var(--space-s);
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    --_row-gap: var(--space-xs);
+  }
+  .source-download a:not(.btn) {
+    margin-left: auto;
+    text-decoration: none;
+  }
+  .source-download a:not(.btn):hover { color: var(--color-text); }
+
   /* Shiki dual-theme. Astro emits both light (inline `color`/`background-color`)
      and dark (`--shiki-dark` / `--shiki-dark-bg` custom properties) values on
      each .astro-code element and token span. Without these overrides, dark

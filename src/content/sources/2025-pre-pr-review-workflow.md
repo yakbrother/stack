@@ -11,6 +11,8 @@ created: 2026-05-05
 updated: 2026-05-05
 sourceAuthor: "Tim Eaton"
 sourceDate: 2025-10-01
+sourceFile: "/downloads/ai-rules/pre-pr-review-workflow.md"
+sourceFileLabel: "pre-pr-review-workflow.md"
 ---
 
 A workflow doc I hand to AI assistants when reviewing a branch before it ships. The AI runs the steps interactively — it analyzes the diff, identifies test gaps, asks before creating tests, and confirms each test before moving on.

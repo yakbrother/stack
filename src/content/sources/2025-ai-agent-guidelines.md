@@ -12,6 +12,8 @@ created: 2026-05-05
 updated: 2026-05-05
 sourceAuthor: "Tim Eaton"
 sourceDate: 2025-10-01
+sourceFile: "/downloads/ai-rules/ai-agent-guidelines.md"
+sourceFileLabel: "ai-agent-guidelines.md (AGENTS.md)"
 ---
 
 The AI agent contract I drop into project roots as `AGENTS.md`. It's the rules-of-engagement version of [AI code correction rules](/sources/2025-11-ai-correction-rules/) — written for the agent rather than the reviewer. Where the correction rules are a checklist, this is a personality + workflow file.

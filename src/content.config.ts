@@ -39,6 +39,13 @@ export const collections = {
       sourceUrl: z.string().url().optional(),
       sourceAuthor: z.string().optional(),
       sourceDate: z.coerce.date().optional(),
+      // sourceFile: path under /downloads/ that hosts the raw source for download.
+      // sourceFileLabel: optional override for the button label.
+      sourceFile: z.string().optional(),
+      sourceFileLabel: z.string().optional(),
+      // sourceFileExtra: an optional second download (e.g. the .skill bundle alongside the .md).
+      sourceFileExtra: z.string().optional(),
+      sourceFileExtraLabel: z.string().optional(),
     }),
   }),
 

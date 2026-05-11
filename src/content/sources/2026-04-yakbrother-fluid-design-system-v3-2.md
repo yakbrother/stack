@@ -15,6 +15,10 @@ created: 2026-05-05
 updated: 2026-05-05
 sourceAuthor: "Tim Eaton"
 sourceDate: 2026-04-27
+sourceFile: "/downloads/skills/yakbrother-fluid-design-system-v3.2.md"
+sourceFileLabel: "yakbrother-fluid-design-system-v3.2.md"
+sourceFileExtra: "/downloads/skills/yakbrother-fluid-design-system.skill"
+sourceFileExtraLabel: "yakbrother-fluid-design-system.skill (Claude Code skill)"
 ---
 
 My design system for building fluid, accessible, modern web interfaces. Released as `v3.2` on 27 April 2026 under CC BY-SA 4.0. This document is the seed source for the rest of this wiki — most of the design pages here begin here.

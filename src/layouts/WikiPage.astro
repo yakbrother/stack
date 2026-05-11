@@ -22,14 +22,19 @@ interface Props {
 }
 
 const { entry, collection, headings = [] } = Astro.props;
-const { title, summary, tags, related, updated, body } = entry.data as {
+const { title, summary, tags, related, updated } = entry.data as {
   title: string;
   summary: string;
   tags: string[];
   related: string[];
   updated: Date;
-  body?: string;
 };
+
+// Optional downloadable source files — only set on entries in the sources collection.
+const sourceFile = (entry.data as { sourceFile?: string }).sourceFile;
+const sourceFileLabel = (entry.data as { sourceFileLabel?: string }).sourceFileLabel;
+const sourceFileExtra = (entry.data as { sourceFileExtra?: string }).sourceFileExtra;
+const sourceFileExtraLabel = (entry.data as { sourceFileExtraLabel?: string }).sourceFileExtraLabel;
 
 // Word count + read time from raw body. body is provided by the glob loader.
 const rawBody = (entry as { body?: string }).body ?? "";
@@ -75,6 +80,23 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
       <div class="row" style="--_row-gap: 6px;">
         {tags.map((t) => <Tag name={t} />)}
       </div>
+    )}
+
+    {sourceFile && (
+      <aside class="source-download row" aria-label="Download original source">
+        <span class="mono" style="font-size:var(--font-size-xs);color:var(--color-muted);text-transform:uppercase;letter-spacing:0.06em;">Download</span>
+        <a class="btn btn--accent" href={sourceFile} download>
+          <span aria-hidden="true">↓</span>
+          <span>{sourceFileLabel ?? "original source"}</span>
+        </a>
+        {sourceFileExtra && (
+          <a class="btn" href={sourceFileExtra} download>
+            <span aria-hidden="true">↓</span>
+            <span>{sourceFileExtraLabel ?? "extra"}</span>
+          </a>
+        )}
+        <a class="mono" style="font-size:var(--font-size-xs);color:var(--color-muted);" href="/downloads/">all downloads →</a>
+      </aside>
     )}
 
     <slot />

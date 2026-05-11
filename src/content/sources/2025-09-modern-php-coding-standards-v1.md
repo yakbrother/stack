@@ -11,6 +11,10 @@ created: 2026-05-05
 updated: 2026-05-05
 sourceAuthor: "Tim Eaton"
 sourceDate: 2025-09-30
+sourceFile: "/downloads/ai-rules/php-modern-standards.md"
+sourceFileLabel: "php-modern-standards.md"
+sourceFileExtra: "/downloads/ai-rules/php-coding-standards.md"
+sourceFileExtraLabel: "php-coding-standards.md (short)"
 ---
 
 A machine-readable PHP coding ruleset I wrote for AI assistants (Claude Code, Cursor, etc.) to follow when generating PHP. Targets PHP 8.0+, conforms to PSR-1, PSR-12, and the Slevomat Coding Standard. The companion short-form rule file (`php-coding-standards.md`) is a subset — start from this v1.0 doc.
